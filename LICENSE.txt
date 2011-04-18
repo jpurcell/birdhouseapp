@@ -1,0 +1,2 @@
+BirdHouse is free for redistribution according to the Apache License included in the LICENSE file.
+

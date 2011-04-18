@@ -1,0 +1,89 @@
+==================
+BirdHouse App v0.1
+==================
+
+License
+=======
+
+Copyright 2011 (c) iEntry, Inc
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+   
+       http://www.apache.org/licenses/LICENSE-2.0
+   
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+Installation & Implementation
+=============================
+
+0. Build Folder
+---------------
+
+If the build/iphone and build/android folders do not exist, then Titanium goes nuts. So, I included the folders, but git ignores them unless there are files in them, so I added an empty file in each folder. Go ahead and delete those.
+
+1. Twitter Application Settings
+-------------------------------
+
+First of all, make sure that you have registered an application with Twitter at http://dev.twitter.com and that the application's type is "Browser" (not "Client"). Also, you will need to set a callback url that has no redirects on that page--if the url redirects the OAuth sequence will not work.
+
+Also, if you would like tweeps who use your application to be able to update their status (i.e. send tweets) then be sure to set "Default access type" to "Read & Write" in the application settings.
+
+2. Configure the BirdHouse Class
+--------------------------------
+
+In the app.js file, change the code that looks like the following to include your keys and callback url according to your Twitter App's settings,
+
+var BH = new BirdHouse({
+    consumer_key: "yourappsconsumerkey",
+    consumer_secret: "yourappsconsumersecretwhichislonger",
+    callback_url: "http://yourappsEXACTcallbackurl.com" // only necessary for overridding
+});
+
+By default, the app uses the birdhouse debug branch so that you can see the output. For production, be sure to use the master branch.
+
+For more information on the BirdHouse script and how it works, see the included README-BIRDHOUSE file.
+
+Debugging
+=========
+
+Please report on GitHub any issues or suggestions!
+
+    http://github.com/jpurcell/birdhouse/issues
+
+Also, check out the Wiki for FAQ and additional info.
+
+    http://github.com/jpurcell/birdhouse/wiki
+
+To Do
+=====
+
+1. More testing with other API calls
+2. Add as much customization as possible
+3. Better documentation and code comments
+
+Known Issues
+============
+
+- On Android, on Twitter's authorization screen, if a popup shows asking if you want to remember this password, the authorization process may fail. If this is a confirmed issue, please post an issue ticket and we can resolve it.
+
+Credits
+=======
+
+This code came from a lot of debugging, implementing some of my own ideas, and I must give credit to the people I got a lot of the code from:
+
+    - Netflix for the oauth.js, 
+    - Paul Johnston and crew for sha1.js,
+    - The oauth developers who made the examples here:
+        http://oauth.googlecode.com/svn/code/javascript/
+    - David Riccitelli for his script that is awesome, but doesn't work on Android,
+        http://code.google.com/p/oauth-adapter/
+    - Ketan Majmudar for modifying the oauth-adapter for Android,
+        https://github.com/stereoket/oauth-adapter
+    - Mike, my colleague at iEntry who initiated the BirdHouse project in PHP.
+
