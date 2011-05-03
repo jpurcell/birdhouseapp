@@ -4,9 +4,9 @@
 // BirdHouse App for testing the BirdHouse class.
 //
 // Author: Joseph D. Purcell, iEntry Inc.
-// Version: 0.1
-// Designed for BirdHouse Version: 0.6
-// Modified: April 2011
+// Version: 0.2
+// Designed for BirdHouse Version: 0.8
+// Modified: May 2011
 // --------------------------------------------------------
 
 var win = Ti.UI.createWindow();
@@ -35,6 +35,8 @@ var actions = [
 	{title:"Is Authorized",color:'#000',height:50},
 	{title:"Send Tweet",color:'#000',height:50},
 	{title:"Send Tweet with Default Text",color:'#000',height:50},
+	{title:"Send URL Shortened Tweet",color:'#000',height:50},
+	{title:"Shorten URL",color:'#000',height:50},
 	{title:"Get Tweets",color:'#000',height:50},
 	{title:"Custom API Call (Last 20 Public Tweets)",color:'#000',height:50}
 ];
@@ -77,6 +79,50 @@ tableView.addEventListener('click',function(e){
 		});
 	} else if (e.row.title=='Send Tweet with Default Text') {
 		BH.tweet('Some default text.');
+	} else if (e.row.title=='Send URL Shortened Tweet') {
+		BH.short_tweet(function(resp){
+			if (resp===true) {
+				alertDialog.message = 'Your tweet was sent!';
+			} else {
+				alertDialog.message = 'Your tweet was not sent :(';
+			}
+			alertDialog.show();
+		});
+	} else if (e.row.title=='Shorten URL') {
+		var urlwin = Ti.UI.createWindow({backgroundColor:'#FFF',fullscreen:true});
+		var urllabel = Ti.UI.createLabel({text:'Enter url:',top:10,height:20,width:'auto'});
+		var geturl = Ti.UI.createButton({title:'Shorten',height:20,width:75,bottom:10,right:10});
+		var cancelgeturl = Ti.UI.createButton({title:'Cancel',height:20,width:75,bottom:10,left:10});
+		var urlbox = Ti.UI.createTextArea({
+			value:'http://www.ientry.com',
+			height:70,
+			width:300,
+			top:60,
+			color:'#000',
+			textAlign:'left',
+			borderWidth:2,
+			borderColor:'#bbb',
+			borderRadius:5
+		});
+		urlwin.add(urllabel);
+		urlwin.add(cancelgeturl);
+		urlwin.add(geturl);
+		urlwin.add(urlbox);
+		cancelgeturl.addEventListener('click',function(){
+			urlwin.close();
+		});
+		urlwin.open();
+		geturl.addEventListener('click',function(){
+			BH.shorten_url(urlbox.value,function(shorturl){
+				if (shorturl!=false) {
+					alertDialog.message = 'Your shortened url is: '+shorturl;
+				} else {
+					alertDialog.message = 'URL was not shortened';
+				}
+				alertDialog.show();
+				urlwin.close();
+			});
+		});
 	} else if (e.row.title=='Get Tweets') {
 		activity.show();
 		BH.get_tweets(function(tweets){
