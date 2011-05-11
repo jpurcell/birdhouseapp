@@ -1,0 +1,144 @@
+==============
+BirdHouse v0.9
+==============
+
+Installation & Implementation
+=============================
+
+1. Twitter Application Settings
+-------------------------------
+
+First of all, make sure that you have registered an application with Twitter at http://dev.twitter.com and that the application's type is "Browser" (not "Client"). Also, you will need to set a callback url that has no redirects on that page--if the url redirects the OAuth sequence will not work.
+
+Also, if you would like tweeps who use your application to be able to update their status (i.e. send tweets) then be sure to set "Default access type" to "Read & Write" in the application settings.
+
+2. Get Dependencies
+-------------------
+
+Go to: http://oauth.googlecode.com/svn/code/javascript/
+
+    a. oauth.js
+    b. sha1.js
+
+3. Include and Initialize BirdHouse Class
+-----------------------------------------
+
+Ti.include('birdhouse.js');
+
+var BH = new BirdHouse({
+    consumer_key: "yourappsconsumerkey",
+    consumer_secret: "yourappsconsumersecretwhichislonger",
+    callback_url: "http://yourappsEXACTcallbackurl.com" // only necessary for overridding
+});
+
+Note 1: you may have to tweak the path in birdhouse.js depending on where the file is placed.
+Note 2: you can add the `show_login_toolbar: false` option to turn off the toolbar at the top when the authorization window opens.
+
+4. Authorize or Make an API Call
+--------------------------------
+
+You can call eight different functions:
+
+    - authorize: this initiates the authorization sequence, storing credentials in the app's directory in a file called 'twitter.config', returns void
+    - deauthorize: deletes the 'twitter.config' so the app no longer has the access tokens
+    - authorized: returns bool whether or not the user is authorized
+    - get_tweets: returns the last 20 tweets as an object (not as a string)
+    - tweet: opens a tweet dialog box optionally with the given text, sends the tweet upon hitting the "tweet" button, and returns the response from twitter, which will be the tweet itself, as an object (not as a string)
+    - short_tweet: same as tweet but has a third button called "Shorten" which shortens any URLs in the tweet
+    - shorten_url: returns a shortened URL
+    - api: sends an api call to the given url by the given method with the given parameters which should be in url form, i.e. "count=20&since_id=13343859", and then returns the evaluated response; the responses are evaluated by:
+
+        return eval('('+XHR.responseText+')');
+
+With any call, if the user is not authorized it will initiate the authorization process, thus, there is no need to initiated the authorization process before hand unless, for some reason, you wanted to get it out of the way. So, for example, to get the latest tweets,
+
+    var tweets = BH.get_tweets();
+
+Note that with most of these functions you can send a callback function. Because the XHR requests will be completed AFTER the functions have already sent a return value, in order to tell whether or not an API request was made successfully, you will need to use a callback, such as:
+
+    BH.get_tweets(function(e){
+        if (e===false) {
+            // it failed
+        } else {
+            // it worked
+        }
+    });
+
+How BirdHouse Authorizes with Twitter
+=====================================
+
+This script does not use the OOB (Out-Of-Band) method, the one where it gets the pin. It actually does something pretty slick. After getting the request tokens, it opens a WebView that sends the user to the authorization page on Twitter's site, and listens for when the page has redirected to a page with the 'oauth_verifier' in the url, which the page will be the app's callback url (or the callback url override if specified). If the tokens aren't found after 1 second it closes.
+
+Note 1: As a quick note here, if the app's callback url immediately redirects to another page, the listener won't pick up that the url has changed until it finally hits the resultant page, and the 'oauth_verifier' token will be lost. So make sure whatever page the callback goes to does not have redirects set.
+
+Note 2: This method is quite tempermental, but it works, and the alternatives are more difficult to work with.
+
+Here is the general process:
+
+1. Get the Request Token
+
+    a. Make API request
+    b. Store the request token and token secret in cfg
+
+2. Get the Request Verifier
+
+    a. Open up a webview to Twitter's site with the request token
+    b. Skip the first load event because we are loading the initial page
+    c. On the second load, set a timeout so that if it doesn't fire a third
+       time we know the user has not clicked 'allow'.
+    d. On the third load event, we know the user has clicked 'allow' and
+       Twitter has redirected to the callback url, so kill the timeout
+       and fetch the tokens in the URL
+    e. Store the verifier in cfg
+    f. Close the webview
+
+3. Get the Access Token
+
+    a. Make API request
+    b. Store the request token and token secret in cfg
+    c. Save the cfg in twitter.config file
+
+4. Callback
+
+    If a callback function is set, call it and send whether or not we are
+    authorized.
+
+Debugging
+=========
+
+Check out the "debug" branch for a version of BirdHouse that has a ton of debug outputs so you can see better what is going on. Please report on GitHub any issues or suggestions!
+
+    http://github.com/jpurcell/birdhouse/issues
+
+Also, check out the Wiki for FAQ and additional info.
+
+    http://github.com/jpurcell/birdhouse/wiki
+
+To Do
+=====
+
+1. More testing with other API calls
+2. Add as much customization as possible
+3. Better documentation and code comments
+
+Known Issues
+============
+
+- If there is a bad connection to Twitter the request verifier page will stall after the user clicks "allow".
+- The short_tweet does not support punctuation after the URL. The regex needs updated.
+
+Credits
+=======
+
+This code came from a lot of debugging, implementing some of my own ideas, and I must give credit to the people I got a lot of the code from:
+
+    - Netflix for the oauth.js, 
+    - Paul Johnston and crew for sha1.js,
+    - The oauth developers who made the examples here:
+        http://oauth.googlecode.com/svn/code/javascript/
+    - David Riccitelli for his script that is awesome, but doesn't work on Android,
+        http://code.google.com/p/oauth-adapter/
+    - Ketan Majmudar for modifying the oauth-adapter for Android,
+        https://github.com/stereoket/oauth-adapter
+    - Mike, my colleague at iEntry who initiated the BirdHouse project in PHP.
+
